@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#050a06">
+  <title>键锋 KEYFORGE — 编程打字练习</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%23050a06'/%3E%3Crect x='3' y='4' width='2.5' height='8' fill='%234afc7f'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="wrap">
+
+    <!-- 顶部：标题 Logo 与音效/帮助按钮 -->
+    <header>
+      <div>
+        <div class="logo">▚ KEYFORGE <span style="font-size:.7em">键锋</span><span class="cursor">▮</span></div>
+        <div class="subtitle">键盘千锤百炼 · 指法键键生锋 · CRT TERMINAL v1.0</div>
+      </div>
+      <div class="topbar">
+        <button id="btnSound" class="iconbtn" title="开关按键音效">♪ 音效 ON</button>
+        <button id="btnHelp" class="iconbtn" title="玩法说明">? 帮助</button>
+      </div>
+    </header>
+
+    <!-- 语言分类标签（由 app.js 动态生成） -->
+    <nav class="tabs" id="tabs"></nav>
+
+    <!-- 片段选择：下拉框 + 随机 / 重新开始 -->
+    <div class="select-row" id="selectRow">
+      <div class="select-wrap">
+        <select id="selSnippet" title="选择练习片段"></select>
+      </div>
+      <button id="btnShuffle" class="btn" title="随机选一篇">⟳ 随机一篇</button>
+      <button id="btnRestart" class="btn" title="从头开始当前片段">↺ 重新开始</button>
+    </div>
+
+    <!-- 代码练习面板：进度条 + 代码区 + 元信息（进度/错误数/片段标题） -->
+    <section class="panel">
+      <div class="progress"><div class="bar" id="progressBar"></div></div>
+      <div class="code" id="code"></div>
+      <div class="code-meta">
+        <span id="progressPct">0%</span>
+        <span id="errCount">错误 0</span>
+        <span id="snippetTitle"></span>
+      </div>
+    </section>
+
+    <!-- 实时统计：准确率 / 速度 WPM / 击键 CPM / 用时 -->
+    <section class="stats">
+      <div class="stat"><div class="v" id="accVal">100.0%</div><div class="l">准确率 ACCURACY</div></div>
+      <div class="stat"><div class="v" id="wpmVal">0</div><div class="l">速度 WPM</div></div>
+      <div class="stat"><div class="v" id="cpmVal">0</div><div class="l">击键 CPM</div></div>
+      <div class="stat"><div class="v" id="timeVal">0:00.0</div><div class="l">用时 TIME</div></div>
+    </section>
+
+    <!-- 指法键盘：键位（JS 生成）+ 手指颜色图例 + 实时提示 -->
+    <section class="panel">
+      <div class="sec-title">指法 FINGERING<span class="sec-sub">键上圆点颜色 = 该用哪根手指 · 高亮键 = 下一个要按的键</span></div>
+      <div class="kb-scroll"><div class="kb" id="kb"></div></div>
+      <div class="legend" id="legend"></div>
+      <div class="hint" id="hint">▶ 等待开始……</div>
+    </section>
+
+    <!-- 自定义练习：粘贴自己的代码（默认隐藏，切到「自定义」分类时显示） -->
+    <section class="panel custom-panel" id="customPanel" hidden>
+      <div class="sec-title">自定义练习 CUSTOM<span class="sec-sub">粘贴任意代码 / 文本，练习自己的内容</span></div>
+      <textarea id="customText" rows="6" spellcheck="false"
+        placeholder="把想练的代码粘贴到这里，例如：&#10;function hello() {&#10;  console.log('hello');&#10;}"></textarea>
+      <div><button id="btnCustom" class="btn primary">▶ 开始自定义练习</button></div>
+    </section>
+
+    <!-- 页脚：玩法提示与数据说明 -->
+    <footer>
+      提示：错误字符显示为红色，需退格修正；速度 = 正确字符数 ÷ 5 ÷ 分钟；成绩会保存在本地浏览器。
+      <br>
+      美术风格为原创 CRT 荧光终端 · 数据仅存于本地 localStorage
+    </footer>
+
+  </div>
+
+  <!-- 任务报告弹层（完成练习后由 JS 显示） -->
+  <div class="overlay" id="overlay">
+    <div class="report">
+      <h2>SYS·REPORT 任务报告</h2>
+      <div class="grade" id="gradeVal">A</div>
+      <div class="grade-note" id="gradeNote"></div>
+      <div class="rows">
+        <div class="r"><span>用时 TIME</span><span id="rTime">0:00.0</span></div>
+        <div class="r"><span>速度 SPEED</span><span id="rWpm">0 WPM</span></div>
+        <div class="r"><span>准确率 ACCURACY</span><span id="rAcc">100.0%</span></div>
+        <div class="r"><span>击键 KEYSTROKES</span><span id="rKeys">0</span></div>
+        <div class="r"><span>错误 ERRORS</span><span id="rErr">0</span></div>
+        <div class="r"><span>历史最佳 BEST</span><span id="rBest">—</span></div>
+      </div>
+      <div class="report-btns">
+        <button class="btn primary" id="rAgain">↺ 再来一次</button>
+        <button class="btn" id="rNext">→ 下一篇</button>
+        <button class="btn" id="rShuffle">⟳ 随机</button>
+        <button class="btn" id="rClose">✕ 关闭</button>
+      </div>
+      <div class="report-tip">Enter 再来一次 · Esc 关闭</div>
+    </div>
+  </div>
+
+  <!-- 帮助面板（点击「? 帮助」或 Esc 开关） -->
+  <div class="help" id="help" hidden>
+    <button class="help-close" id="helpClose" title="关闭">✕</button>
+    <h3>▸ 玩法说明</h3>
+    <ul>
+      <li>输入上方代码：绿色为已输入，<b>高亮字符</b>是当前要按的键。</li>
+      <li>按错显示为红色，需先按退格键修正。</li>
+      <li>键盘上发光的键 = 下一个要按的键，颜色代表该用的手指。</li>
+      <li>大写与符号需同时按 <b>Shift</b>，Shift 也会同步发光提示。</li>
+      <li>完成整段后查看任务报告，可挑战更高评级（S/A/B/C/D）。</li>
+      <li>在「自定义」分类可粘贴自己的代码练习。</li>
+    </ul>
+  </div>
+
+  <!-- CRT 开机爆闪覆盖层（纯视觉，加载后自动淡出） -->
+  <div id="boot" aria-hidden="true"></div>
+
+  <!-- 先加载代码库，再加载主逻辑 -->
+  <script src="snippets.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
