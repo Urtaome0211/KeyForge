@@ -1,0 +1,10 @@
+# Qt 版构建产物（不入库）
+build/
+dist/
+
+# Qt Creator 用户配置
+*.user
+CMakeLists.txt.user
+
+# 常见杂项
+*.autosave
